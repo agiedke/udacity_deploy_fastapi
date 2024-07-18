@@ -1,0 +1,45 @@
+
+name: CI
+
+# Controls when the workflow will run
+on: [push]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8] 
+
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - uses: actions/checkout@v2 # Calling a pre-built GitHub Action which allows your Action to access your repository.
+    - name: Set up Python ${{ matrix.python-version }} # Name of an action that sets up Python.
+      uses: actions/setup-python@v2 # A pre-built GitHub Action that sets up a Python environment.
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies # The first step that isn't just calling another action.
+      run: |
+        python -m pip install --upgrade pip # Upgrade pip to the latest version.
+        pip install pytest # Install pytest.
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi # If we have a requirements.txt, then install it.
+
+    # Runs a single command using the runners shell
+    - name: Run a one-line script
+      run: echo Hello, world!
+
+    # Runs a set of commands using the runners shell
+    - name: Run a multi-line script
+      run: |
+        echo Add other actions to build,
+        echo test, and deploy your project.
+    - name: lynting
+      run: |
+        flake8
+    - name: Test with pytest 
+      run: |
+        pytest
