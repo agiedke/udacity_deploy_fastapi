@@ -44,6 +44,7 @@ def process_data(train, categorical_features, label, training=True, encoder=None
 def train_model(X_train, y_train):
     lr_model = LogisticRegression(random_state=42)
     lr_model.fit(X_train, y_train)
+    print(type(lr_model))
     return lr_model
 
 def predict(model, X):
@@ -74,38 +75,39 @@ def sliced_score(X_test, y_test, model, lb, min_sample_size=30):
             nr_cat+=1
     print(f"Number of categories with sample size over {min_sample_size}: {nr_cat}")
 
-# Add code to load in the data.
-data = pd.read_csv(LOCALPATHTODATA)
 
+if __name__=="__main__":
+    # Add code to load in the data.
+    data = pd.read_csv(LOCALPATHTODATA)
 
-# Optional enhancement, use K-fold cross validation instead of a train-test split.
-train, test = train_test_split(data, test_size=0.20, random_state=999)
+    # Optional enhancement, use K-fold cross validation instead of a train-test split.
+    train, test = train_test_split(data, test_size=0.20, random_state=999)
 
-cat_features = [
-    "workclass",
-    "education",
-    "marital-status",
-    "occupation",
-    "relationship",
-    "race",
-    "sex",
-    "native-country",
-]
+    cat_features = [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
 
-# process data
-X_train, y_train, encoder, lb = process_data(
-    train, categorical_features=cat_features, label="salary", training=True
-)
-X_test, y_test, encoder, lb = process_data(
-    test, categorical_features=cat_features, label="salary", training=False, encoder=encoder
-)
+    # process data
+    X_train, y_train, encoder, lb = process_data(
+        train, categorical_features=cat_features, label="salary", training=True
+    )
+    X_test, y_test, encoder, lb = process_data(
+        test, categorical_features=cat_features, label="salary", training=False, encoder=encoder
+    )
 
-# Train and save a model.
-model = train_model(X_train, y_train)
+    # Train and save a model.
+    model = train_model(X_train, y_train)
 
-# Get overall performance
-y_pred = predict(model, X_test)
-score(y_pred, y_test)
+    # Get overall performance
+    y_pred = predict(model, X_test)
+    score(y_pred, y_test)
 
-# Get performance on slices
-sliced_score(X_test, y_test, model, lb)
+    # Get performance on slices
+    #sliced_score(X_test, y_test, model, lb)
