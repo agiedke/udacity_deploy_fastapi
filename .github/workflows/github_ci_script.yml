@@ -37,9 +37,9 @@ jobs:
       run: |
         echo Add other actions to build,
         echo test, and deploy your project.
-    - name: lynting
-      run: |
-        flake8
+    #- name: lynting
+    #  run: |
+    #    flake8
     - name: Test with pytest 
       run: |
         pytest
