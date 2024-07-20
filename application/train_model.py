@@ -1,5 +1,6 @@
 # Script to train machine learning model.
 import sys
+import pickle
 
 import pandas as pd
 
@@ -10,6 +11,7 @@ from sklearn.metrics import f1_score
 
 # Constants
 LOCALPATHTODATA = "./nd0821-c3-starter-code/starter/data/census.csv"
+MODELPATH="model/lr_model.pkl"
 
 # Functions
 # Proces the test data with the process_data function.
@@ -41,10 +43,11 @@ def process_data(train, categorical_features, label, training=True, encoder=None
     lb = new_columns
     return X_train, y_train, encoder, lb
 
-def train_model(X_train, y_train):
+def train_model(X_train, y_train, model_path):
     lr_model = LogisticRegression(random_state=42)
     lr_model.fit(X_train, y_train)
     print(type(lr_model))
+    pickle.dump(lr_model, open(model_path, "wb"))
     return lr_model
 
 def predict(model, X):
@@ -103,7 +106,7 @@ if __name__=="__main__":
     )
 
     # Train and save a model.
-    model = train_model(X_train, y_train)
+    model = train_model(X_train, y_train, model_path=MODELPATH)
 
     # Get overall performance
     y_pred = predict(model, X_test)
