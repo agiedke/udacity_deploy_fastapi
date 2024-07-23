@@ -46,7 +46,6 @@ def process_data(train, categorical_features, label, training=True, encoder=None
 def train_model(X_train, y_train, model_path):
     lr_model = LogisticRegression(random_state=42)
     lr_model.fit(X_train, y_train)
-    print(type(lr_model))
     pickle.dump(lr_model, open(model_path, "wb"))
     return lr_model
 
@@ -105,6 +104,8 @@ if __name__=="__main__":
         test, categorical_features=cat_features, label="salary", training=False, encoder=encoder
     )
 
+    #X_test.to_csv("data/test_inference.csv", index=False)
+
     # Train and save a model.
     model = train_model(X_train, y_train, model_path=MODELPATH)
 
@@ -113,4 +114,4 @@ if __name__=="__main__":
     score(y_pred, y_test)
 
     # Get performance on slices
-    #sliced_score(X_test, y_test, model, lb)
+    sliced_score(X_test, y_test, model, lb)
