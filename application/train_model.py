@@ -43,10 +43,11 @@ def process_data(train, categorical_features, label, training=True, encoder=None
     lb = new_columns
     return X_train, y_train, encoder, lb
 
-def train_model(X_train, y_train, model_path):
+def train_model(X_train, y_train, model_path=None):
     lr_model = LogisticRegression(random_state=42)
     lr_model.fit(X_train, y_train)
-    pickle.dump(lr_model, open(model_path, "wb"))
+    if model_path is not None:
+        pickle.dump(lr_model, open(model_path, "wb"))
     return lr_model
 
 def predict(model, X):
