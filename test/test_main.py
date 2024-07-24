@@ -1,5 +1,4 @@
 import pytest
-from numpy import ndarray
 from fastapi.testclient import TestClient
 
 from application.main import app
