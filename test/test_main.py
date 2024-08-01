@@ -5,6 +5,7 @@ from application.main import app
 
 client = TestClient(app)
 
+
 # Testing the GET / endpoint
 def test_say_hello():
     r = client.get("/")
@@ -15,6 +16,7 @@ def test_say_hello():
     # Testing unsuccessfull get call (404 not found)
     r = client.get("/{some_param}")
     assert r.status_code == 404
+
 
 # Testing the POST /predict endpoint -> unsuccessfull post call (400 bad request) due to wrong input values
 @pytest.mark.asyncio
@@ -27,6 +29,7 @@ async def test_predict_unsuccessfull():
     files = {'file': ('test.csv', csv_content, 'text/csv')}
     response = client.post("/predict", files=files)
     assert response.status_code == 400
+
 
 # Testing the POST /predict endpoint -> successfull post calls with response value "<=50"
 @pytest.mark.asyncio
@@ -47,6 +50,7 @@ async def test_predict_successfull_inf1():
     # Testing successfull post call return values
     assert predictions[0] == "<=50K"
 
+
 # Testing the POST /predict endpoint -> successfull post calls with response value ">50"
 @pytest.mark.asyncio
 async def test_predict_successfull_inf2():
@@ -58,4 +62,3 @@ async def test_predict_successfull_inf2():
     predictions = client.post("/predict", files=files).json()["prediction"]
     # Testing successfull post call return values
     assert predictions[0] == ">50K"
-

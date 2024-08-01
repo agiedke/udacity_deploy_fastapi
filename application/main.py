@@ -12,14 +12,17 @@ app = FastAPI()
 with open('model/lr_model.pkl', 'rb') as model_file:
     model = pickle.load(model_file)
 
+
 # Declaring data model for the returned prediction
 class PredictResponse(BaseModel):
     prediction: List[str]
+
 
 # Get method to output a welcome message
 @app.get("/")
 async def say_hello() -> str:
     return "Welcome to this project"
+
 
 # POST method for inference
 @app.post("/predict", response_model=PredictResponse)
