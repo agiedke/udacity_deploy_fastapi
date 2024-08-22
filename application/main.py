@@ -2,11 +2,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import pickle
 import pandas as pd
-from typing import List, Any
+from typing import List
 
 from application.train_model import process_data, predict
-#from application.train_model import process_data
-#import application.train_model
 
 # Initializing FastAPI app
 app = FastAPI()
@@ -18,6 +16,7 @@ with open('model/lr_model.pkl', 'rb') as model_file:
 # Loading pre-trained encoder
 with open('model/encoder.pkl', 'rb') as encoder_file:
     encoder = pickle.load(encoder_file)
+
 
 class Data(BaseModel):
     age: int = Field(..., example=37)
@@ -38,6 +37,7 @@ class Data(BaseModel):
     native_country: str = Field(..., example="United-States",
                                 alias="native-country")
     salary: str = Field(..., example="<=50K")
+
 
 # Declaring data model for the returned prediction
 class PredictResponse(BaseModel):

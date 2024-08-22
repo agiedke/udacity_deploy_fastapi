@@ -35,6 +35,7 @@ def test_predict_invalid_input():
     assert response.status_code == 422
     assert "detail" in response.json()
 
+
 # 3. Testing the POST /predict endpoint -> successful POST Request (Valid Input) with return value "<=50K"
 @pytest.mark.asyncio
 async def test_predict_successfull_inf1():
@@ -80,6 +81,7 @@ async def test_predict_successfull_inf1():
     assert "prediction" in response_json
     assert isinstance(response_json["prediction"], list)
     assert len(response_json["prediction"]) > 0
+
 
 # 4. Testing the POST /predict endpoint -> successful POST Request (Valid Input) with return value ">=50K"
 @pytest.mark.asyncio
