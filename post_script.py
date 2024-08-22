@@ -1,7 +1,7 @@
 import requests
 
 # URL of the FastAPI endpoint
-url = "http://127.0.0.1:8000/predict"
+url = "https://udacity-deploy-fastapi.onrender.com/predict"
 
 # JSON payload
 payload = {
