@@ -1,17 +1,43 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 import pickle
 import pandas as pd
-from typing import List
-import io
+from typing import List, Any
+
+from application.train_model import process_data, predict
+#from application.train_model import process_data
+#import application.train_model
 
 # Initializing FastAPI app
 app = FastAPI()
 
-# Load your pre-trained model
+# Loading pre-trained model
 with open('model/lr_model.pkl', 'rb') as model_file:
     model = pickle.load(model_file)
 
+# Loading pre-trained encoder
+with open('model/encoder.pkl', 'rb') as encoder_file:
+    encoder = pickle.load(encoder_file)
+
+class Data(BaseModel):
+    age: int = Field(..., example=37)
+    workclass: str = Field(..., example="Private")
+    fnlgt: int = Field(..., example=178356)
+    education: str = Field(..., example="HS-grad")
+    education_num: int = Field(..., example=10, alias="education-num")
+    marital_status: str = Field(
+        ..., example="Married-civ-spouse", alias="marital-status"
+    )
+    occupation: str = Field(..., example="Prof-specialty")
+    relationship: str = Field(..., example="Husband")
+    race: str = Field(..., example="White")
+    sex: str = Field(..., example="Male")
+    capital_gain: int = Field(..., example=0, alias="capital-gain")
+    capital_loss: int = Field(..., example=0, alias="capital-loss")
+    hours_per_week: int = Field(..., example=40, alias="hours-per-week")
+    native_country: str = Field(..., example="United-States",
+                                alias="native-country")
+    salary: str = Field(..., example="<=50K")
 
 # Declaring data model for the returned prediction
 class PredictResponse(BaseModel):
@@ -26,14 +52,29 @@ async def say_hello() -> str:
 
 # POST method for inference
 @app.post("/predict", response_model=PredictResponse)
-async def predict(file: UploadFile = File(...)):
+async def call_predict(input_data: Data):
     try:
-        # Read the uploaded CSV file
-        contents = await file.read()
-        # Load the CSV file into a DataFrame
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")), header="infer")
-        # Perform prediction using the model
-        predictions = model.predict(df)
+        # turning the Pydantic model into a dict, cleaning names and converting to df
+        data_dict = input_data.dict()
+        data = {k.replace("_", "-"): [v] for k, v in data_dict.items()}
+        data = pd.DataFrame.from_dict(data)
+
+        # processing data
+        cat_features = [
+            "workclass",
+            "education",
+            "marital-status",
+            "occupation",
+            "relationship",
+            "race",
+            "sex",
+            "native-country",
+        ]
+        data_processed, _, _, _ = process_data(
+            data, categorical_features=cat_features, training=False, encoder=encoder, encoder_path=None
+        )
+        # returning inference predictions
+        predictions = predict(model, data_processed)
         return PredictResponse(prediction=predictions.tolist())
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

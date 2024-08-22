@@ -6,7 +6,7 @@ from application.main import app
 client = TestClient(app)
 
 
-# Testing the GET / endpoint
+# 1. Testing the GET / endpoint
 def test_say_hello():
     r = client.get("/")
     # Testing successfull get call (200 OK)
@@ -18,28 +18,53 @@ def test_say_hello():
     assert r.status_code == 404
 
 
-# Testing the POST /predict endpoint -> unsuccessfull post call (400 bad request) due to wrong input values
-@pytest.mark.asyncio
-async def test_predict_unsuccessfull():
-    csv_content = """feature1,feature2,feature3
-    1,2,3
-    4,5,6
-    7,8,9
-    """
-    files = {'file': ('test.csv', csv_content, 'text/csv')}
-    response = client.post("/predict", files=files)
-    assert response.status_code == 400
+# 2. Testing the POST /predict endpoint -> unsuccessfull POST request (400 bad request) due to wrong input values
+def test_predict_invalid_input():
+    # payload with missing required fields
+    invalid_payload = {
+        "age": 37,
+        "workclass": "Private",
+        "fnlgt": 178356,
+        # Missing other required fields
+    }
 
+    # Send POST request with invalid payload
+    response = client.post("/predict", json=invalid_payload)
 
-# Testing the POST /predict endpoint -> successfull post calls with response value "<=50"
+    # Assert that the status code is 422 (Unprocessable Entity)
+    assert response.status_code == 422
+    assert "detail" in response.json()
+
+# 3. Testing the POST /predict endpoint -> successful POST Request (Valid Input) with return value "<=50K"
 @pytest.mark.asyncio
 async def test_predict_successfull_inf1():
-    # Testing successfull post call (200 ok)
-    csv_content = """workclass_?,workclass_Federal-gov,workclass_Local-gov,workclass_Never-worked,workclass_Private,workclass_Self-emp-inc,workclass_Self-emp-not-inc,workclass_State-gov,workclass_Without-pay,education_10th,education_11th,education_12th,education_1st-4th,education_5th-6th,education_7th-8th,education_9th,education_Assoc-acdm,education_Assoc-voc,education_Bachelors,education_Doctorate,education_HS-grad,education_Masters,education_Preschool,education_Prof-school,education_Some-college,marital-status_Divorced,marital-status_Married-AF-spouse,marital-status_Married-civ-spouse,marital-status_Married-spouse-absent,marital-status_Never-married,marital-status_Separated,marital-status_Widowed,occupation_?,occupation_Adm-clerical,occupation_Armed-Forces,occupation_Craft-repair,occupation_Exec-managerial,occupation_Farming-fishing,occupation_Handlers-cleaners,occupation_Machine-op-inspct,occupation_Other-service,occupation_Priv-house-serv,occupation_Prof-specialty,occupation_Protective-serv,occupation_Sales,occupation_Tech-support,occupation_Transport-moving,relationship_Husband,relationship_Not-in-family,relationship_Other-relative,relationship_Own-child,relationship_Unmarried,relationship_Wife,race_Amer-Indian-Eskimo,race_Asian-Pac-Islander,race_Black,race_Other,race_White,sex_Female,sex_Male,native-country_?,native-country_Cambodia,native-country_Canada,native-country_China,native-country_Columbia,native-country_Cuba,native-country_Dominican-Republic,native-country_Ecuador,native-country_El-Salvador,native-country_England,native-country_France,native-country_Germany,native-country_Greece,native-country_Guatemala,native-country_Haiti,native-country_Holand-Netherlands,native-country_Honduras,native-country_Hong,native-country_Hungary,native-country_India,native-country_Iran,native-country_Ireland,native-country_Italy,native-country_Jamaica,native-country_Japan,native-country_Laos,native-country_Mexico,native-country_Nicaragua,native-country_Outlying-US(Guam-USVI-etc),native-country_Peru,native-country_Philippines,native-country_Poland,native-country_Portugal,native-country_Puerto-Rico,native-country_Scotland,native-country_South,native-country_Taiwan,native-country_Thailand,native-country_Trinadad&Tobago,native-country_United-States,native-country_Vietnam,native-country_Yugoslavia,age,fnlgt,education-num,capital-gain,capital-loss,hours-per-week
-    0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,21,478457,10,0,0,12
-    """
-    files = {'file': ('test.csv', csv_content, 'text/csv')}
-    response = client.post("/predict", files=files)
+    # Valid payload
+    valid_payload = {
+        "age": 37,
+        "workclass": "Private",
+        "fnlgt": 178356,
+        "education": "HS-grad",
+        "education-num": 10,
+        "marital-status": "Married-civ-spouse",
+        "occupation": "Prof-specialty",
+        "relationship": "Husband",
+        "race": "White",
+        "sex": "Male",
+        "capital-gain": 0,
+        "capital-loss": 0,
+        "hours-per-week": 40,
+        "native-country": "United-States",
+        "salary": ""
+    }
+
+    # Send POST request with valid payload
+    response = client.post("/predict", json=valid_payload)
+
+    # Debugging: Print response details
+    print(response.status_code)
+    print(response.text)
+
+    # Assert that the status code is 200 (OK)
     assert response.status_code == 200
     # Testing successfull post call return types
     json_response = response.json()
@@ -50,15 +75,54 @@ async def test_predict_successfull_inf1():
     # Testing successfull post call return values
     assert predictions[0] == "<=50K"
 
+    # Assert that the response contains the prediction
+    response_json = response.json()
+    assert "prediction" in response_json
+    assert isinstance(response_json["prediction"], list)
+    assert len(response_json["prediction"]) > 0
 
-# Testing the POST /predict endpoint -> successfull post calls with response value ">50"
+# 4. Testing the POST /predict endpoint -> successful POST Request (Valid Input) with return value ">=50K"
 @pytest.mark.asyncio
 async def test_predict_successfull_inf2():
-    # Testing successfull post call (200 ok)
-    csv_content = """workclass_?,workclass_Federal-gov,workclass_Local-gov,workclass_Never-worked,workclass_Private,workclass_Self-emp-inc,workclass_Self-emp-not-inc,workclass_State-gov,workclass_Without-pay,education_10th,education_11th,education_12th,education_1st-4th,education_5th-6th,education_7th-8th,education_9th,education_Assoc-acdm,education_Assoc-voc,education_Bachelors,education_Doctorate,education_HS-grad,education_Masters,education_Preschool,education_Prof-school,education_Some-college,marital-status_Divorced,marital-status_Married-AF-spouse,marital-status_Married-civ-spouse,marital-status_Married-spouse-absent,marital-status_Never-married,marital-status_Separated,marital-status_Widowed,occupation_?,occupation_Adm-clerical,occupation_Armed-Forces,occupation_Craft-repair,occupation_Exec-managerial,occupation_Farming-fishing,occupation_Handlers-cleaners,occupation_Machine-op-inspct,occupation_Other-service,occupation_Priv-house-serv,occupation_Prof-specialty,occupation_Protective-serv,occupation_Sales,occupation_Tech-support,occupation_Transport-moving,relationship_Husband,relationship_Not-in-family,relationship_Other-relative,relationship_Own-child,relationship_Unmarried,relationship_Wife,race_Amer-Indian-Eskimo,race_Asian-Pac-Islander,race_Black,race_Other,race_White,sex_Female,sex_Male,native-country_?,native-country_Cambodia,native-country_Canada,native-country_China,native-country_Columbia,native-country_Cuba,native-country_Dominican-Republic,native-country_Ecuador,native-country_El-Salvador,native-country_England,native-country_France,native-country_Germany,native-country_Greece,native-country_Guatemala,native-country_Haiti,native-country_Holand-Netherlands,native-country_Honduras,native-country_Hong,native-country_Hungary,native-country_India,native-country_Iran,native-country_Ireland,native-country_Italy,native-country_Jamaica,native-country_Japan,native-country_Laos,native-country_Mexico,native-country_Nicaragua,native-country_Outlying-US(Guam-USVI-etc),native-country_Peru,native-country_Philippines,native-country_Poland,native-country_Portugal,native-country_Puerto-Rico,native-country_Scotland,native-country_South,native-country_Taiwan,native-country_Thailand,native-country_Trinadad&Tobago,native-country_United-States,native-country_Vietnam,native-country_Yugoslavia,age,fnlgt,education-num,capital-gain,capital-loss,hours-per-week
-    0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,56,52953,16,0,1669,38
-    """
-    files = {'file': ('test.csv', csv_content, 'text/csv')}
-    predictions = client.post("/predict", files=files).json()["prediction"]
+    # Valid payload
+    valid_payload = {
+        "age": 56,
+        "workclass": "Local-gov",
+        "fnlgt": 52953,
+        "education": "Doctorate",
+        "education-num": 16,
+        "marital-status": "Divorced",
+        "occupation": "Prof-specialty",
+        "relationship": "Not-in-family",
+        "race": "White",
+        "sex": "Female",
+        "capital-gain": 0,
+        "capital-loss": 1669,
+        "hours-per-week": 38,
+        "native-country": "United-States",
+        "salary": ""
+    }
+
+    # Send POST request with valid payload
+    response = client.post("/predict", json=valid_payload)
+
+    # Debugging: Print response details
+    print(response.status_code)
+    print(response.text)
+
+    # Assert that the status code is 200 (OK)
+    assert response.status_code == 200
+    # Testing successfull post call return types
+    json_response = response.json()
+    assert "prediction" in json_response
+    predictions = json_response["prediction"]
+    assert isinstance(predictions, list)
+    assert all(isinstance(p, str) for p in predictions)
     # Testing successfull post call return values
     assert predictions[0] == ">50K"
+
+    # Assert that the response contains the prediction
+    response_json = response.json()
+    assert "prediction" in response_json
+    assert isinstance(response_json["prediction"], list)
+    assert len(response_json["prediction"]) > 0

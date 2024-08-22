@@ -12,17 +12,19 @@ from sklearn.metrics import f1_score
 # Constants
 LOCALPATHTODATA = "./nd0821-c3-starter-code/starter/data/census.csv"
 MODELPATH = "model/lr_model.pkl"
+ENCODERPATH = "model/encoder.pkl"
 
 
 # Functions
 # Proces the test data with the process_data function.
-def process_data(train, categorical_features, label, training=True, encoder=None):
+def process_data(train, categorical_features, label="salary", training=True, encoder=None, encoder_path=ENCODERPATH):
     # categorical features
     X_train_cat_raw = train[categorical_features]
     if training:
         # one hot encoding
         encoder = OneHotEncoder()
         encoder.fit(X_train_cat_raw)
+        pickle.dump(encoder, open(encoder_path, "wb"))
     if not training and encoder is None:
         print("Error: Need to pass encoder")
         sys.exit(1)
