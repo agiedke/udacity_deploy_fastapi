@@ -13,6 +13,7 @@ app = FastAPI()
 model = None
 encoder = None
 
+
 # Loading artifacts on startup of application
 @app.on_event("startup")
 async def startup_event():

@@ -35,4 +35,3 @@ try:
         print(f"Response text:\n{response.text}")
 except requests.exceptions.RequestException as e:
     print(f"error occured during request: {e}")
-
