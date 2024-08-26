@@ -22,13 +22,17 @@ payload = {
     "salary": "<=50K"
 }
 
-# POST request
-response = requests.post(url, json=payload)
+try:
+    # POST request
+    response = requests.post(url, json=payload)
 
-# print response code and data
-if response.status_code == 200:
-    print(f"Request was successful. Status code: {response.status_code}")
-    print(f"Response data:\n{response.json()}")
-else:
-    print(f"Request failed with status code: {response.status_code}")
-    print(f"Response text:\n{response.text}")
+    # print response code and data
+    if response.status_code == 200:
+        print(f"Request was successful. Status code: {response.status_code}")
+        print(f"Response data:\n{response.json()}")
+    else:
+        print(f"Request failed with status code: {response.status_code}")
+        print(f"Response text:\n{response.text}")
+except requests.exceptions.RequestException as e:
+    print(f"error occured during request: {e}")
+
