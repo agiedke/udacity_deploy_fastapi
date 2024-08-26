@@ -9,21 +9,13 @@ from application.train_model import process_data, predict
 # Initializing FastAPI app
 app = FastAPI()
 
-# Declaring global variables for the model and encoder
-model = None
-encoder = None
+# Loading pre-trained model
+with open('model/lr_model.pkl', 'rb') as model_file:
+    model = pickle.load(model_file)
 
-
-# Loading artifacts on startup of application
-@app.on_event("startup")
-async def startup_event():
-    global model, encoder
-    # Loading pre-trained model
-    with open('model/lr_model.pkl', 'rb') as model_file:
-        model = pickle.load(model_file)
-    # Loading pre-trained encoder
-    with open('model/encoder.pkl', 'rb') as encoder_file:
-        encoder = pickle.load(encoder_file)
+# Loading pre-trained encoder
+with open('model/encoder.pkl', 'rb') as encoder_file:
+    encoder = pickle.load(encoder_file)
 
 
 class Data(BaseModel):
